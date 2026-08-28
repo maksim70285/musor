@@ -1,0 +1,8 @@
+{
+  "name": "Расписание Очереди",
+  "description": "Менеджер расписания очереди для Артёма и Максима.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
