@@ -1,6 +1,13 @@
 import { Entry } from './types';
 
 export const api = {
+  checkPasswordStatus: async (username: string): Promise<boolean> => {
+    const res = await fetch(`/api/users/${encodeURIComponent(username)}/has-password`);
+    if (!res.ok) return false;
+    const data = await res.json();
+    return data.hasPassword;
+  },
+
   login: async (username: string, password: string):Promise<boolean> => {
     const res = await fetch('/api/login', {
       method: 'POST',

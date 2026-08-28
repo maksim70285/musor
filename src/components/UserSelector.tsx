@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { UserName } from '../types';
 import { cn } from '../lib/utils';
 import { User, ArrowRight, Lock } from 'lucide-react';
+import { api } from '../api';
 
 interface UserSelectorProps {
   onSelect: (user: UserName, password?: string) => void;
@@ -11,12 +12,19 @@ interface UserSelectorProps {
 export function UserSelector({ onSelect }: UserSelectorProps) {
   const [selectedUser, setSelectedUser] = useState<UserName | null>(null);
   const [password, setPassword] = useState('');
+  const [isNewUser, setIsNewUser] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedUser && password) {
       onSelect(selectedUser, password);
     }
+  };
+
+  const handleUserClick = async (user: UserName) => {
+    setSelectedUser(user);
+    const hasPass = await api.checkPasswordStatus(user);
+    setIsNewUser(!hasPass);
   };
 
   return (
@@ -32,7 +40,9 @@ export function UserSelector({ onSelect }: UserSelectorProps) {
           </div>
           <h1 className="text-3xl font-bold tracking-tight">Кто вы?</h1>
           <p className="text-slate-500 text-lg">
-            {selectedUser ? `Введите пароль для ${selectedUser}` : 'Выберите свой профиль для входа'}
+            {selectedUser 
+              ? (isNewUser ? `Придумайте пароль для входа (${selectedUser})` : `Введите пароль для ${selectedUser}`) 
+              : 'Выберите свой профиль для входа'}
           </p>
         </div>
 
@@ -47,7 +57,7 @@ export function UserSelector({ onSelect }: UserSelectorProps) {
                 className="grid gap-4"
               >
                 <button
-                  onClick={() => setSelectedUser('Артём')}
+                  onClick={() => handleUserClick('Артём')}
                   className={cn(
                     "group relative flex items-center justify-between p-6 rounded-2xl",
                     "bg-slate-800 border-2 border-slate-700",
@@ -67,7 +77,7 @@ export function UserSelector({ onSelect }: UserSelectorProps) {
                 </button>
 
                 <button
-                  onClick={() => setSelectedUser('Максим')}
+                  onClick={() => handleUserClick('Максим')}
                   className={cn(
                     "group relative flex items-center justify-between p-6 rounded-2xl",
                     "bg-slate-800 border-2 border-slate-700",
@@ -97,7 +107,7 @@ export function UserSelector({ onSelect }: UserSelectorProps) {
               >
                 <input
                   type="password"
-                  placeholder="Пароль"
+                  placeholder={isNewUser ? "Придумайте пароль" : "Пароль"}
                   autoFocus
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -108,7 +118,7 @@ export function UserSelector({ onSelect }: UserSelectorProps) {
                   disabled={!password}
                   className="w-full p-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg disabled:opacity-50 disabled:pointer-events-none transition-colors"
                 >
-                  Войти
+                  {isNewUser ? "Сохранить и войти" : "Войти"}
                 </button>
                 <button
                   type="button"

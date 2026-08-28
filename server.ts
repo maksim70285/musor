@@ -21,6 +21,7 @@ interface Entry {
 
 interface Database {
   entries: Entry[];
+  passwords?: Record<string, string>;
 }
 
 // Initial state as requested
@@ -45,11 +46,13 @@ const INITIAL_ENTRIES: Entry[] = [
 
 function readDB(): Database {
   if (!fs.existsSync(DB_FILE)) {
-    const defaultDb = { entries: INITIAL_ENTRIES };
+    const defaultDb = { entries: INITIAL_ENTRIES, passwords: {} };
     fs.writeFileSync(DB_FILE, JSON.stringify(defaultDb, null, 2));
     return defaultDb;
   }
-  return JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
+  const db = JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
+  if (!db.passwords) db.passwords = {};
+  return db;
 }
 
 function writeDB(data: Database) {
@@ -62,12 +65,6 @@ async function startServer() {
 
   app.use(express.json());
   app.use(cookieParser());
-
-  // Simple hardcoded passwords for the two users
-  const PASSWORDS: Record<string, string> = {
-    'Артём': '1234',
-    'Максим': '1234'
-  };
 
   // Auth Middleware
   const requireAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -84,20 +81,35 @@ async function startServer() {
 
   // --- API Routes ---
 
+  app.get('/api/users/:username/has-password', (req, res) => {
+    const db = readDB();
+    const hasPassword = !!(db.passwords && db.passwords[req.params.username]);
+    res.json({ hasPassword });
+  });
+
   app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
-    if (PASSWORDS[username] && PASSWORDS[username] === password) {
-      const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '365d' });
-      res.cookie('auth_token', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 365 * 24 * 60 * 60 * 1000 // 1 year
-      });
-      res.json({ success: true, username });
-    } else {
-      res.status(401).json({ error: 'Неверный пароль' });
+    if (!username || !password) return res.status(400).json({ error: 'Bad Request' });
+
+    const db = readDB();
+    if (!db.passwords) db.passwords = {};
+
+    if (!db.passwords[username]) {
+      // First login - set the password
+      db.passwords[username] = password;
+      writeDB(db);
+    } else if (db.passwords[username] !== password) {
+      return res.status(401).json({ error: 'Неверный пароль' });
     }
+
+    const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '365d' });
+    res.cookie('auth_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 365 * 24 * 60 * 60 * 1000 // 1 year
+    });
+    res.json({ success: true, username });
   });
 
   app.post('/api/logout', (req, res) => {
