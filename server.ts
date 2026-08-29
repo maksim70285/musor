@@ -59,7 +59,22 @@ function writeDB(data: Database) {
   fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
 }
 
+function createBackup() {
+  if (fs.existsSync(DB_FILE)) {
+    const backupFile = path.join(process.cwd(), 'database.backup.json');
+    try {
+      fs.copyFileSync(DB_FILE, backupFile);
+      console.log(`[Backup] Database backed up to ${backupFile}`);
+    } catch (e) {
+      console.error('[Backup Error] Failed to create backup:', e);
+    }
+  }
+}
+
 async function startServer() {
+  // Create an automatic backup on server startup
+  createBackup();
+
   const app = express();
   const PORT = 3000;
 
