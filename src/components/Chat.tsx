@@ -26,7 +26,11 @@ export function Chat({ currentUser, onClose }: ChatProps) {
     api.getMessages().then(setMessages);
 
     // Connect to WebSocket
-    const socket = io({ path: '/socket.io' });
+    const socket = io(window.location.origin, { 
+      path: '/socket.io',
+      reconnection: true,
+      transports: ['polling', 'websocket']
+    });
     socketRef.current = socket;
 
     socket.on('new_message', (msg: ChatMessage) => {
