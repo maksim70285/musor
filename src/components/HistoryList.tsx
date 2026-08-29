@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Entry, TaskType } from '../types';
 import { formatShortDate } from '../utils';
-import { Trash2, Camera, Video } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { MediaViewer } from './MediaViewer';
 
 interface HistoryListProps {
   entries: Entry[];
@@ -11,6 +12,8 @@ interface HistoryListProps {
 }
 
 export function HistoryList({ entries, tasks, onDelete }: HistoryListProps) {
+  const [viewingMedia, setViewingMedia] = useState<{url: string, type: 'image' | 'video'} | null>(null);
+
   return (
     <div className="space-y-8 mt-6">
       {tasks.map(task => {
@@ -51,10 +54,14 @@ export function HistoryList({ entries, tasks, onDelete }: HistoryListProps) {
                         ВНЕ ОЧЕРЕДИ • {entry.outOfOrderReason}
                       </div>
                     )}
-                    {entry.fileUrl && (
-                      <div className="m3-body-md text-[var(--color-md-sys-color-primary)] mt-1 pl-[4.5rem] flex items-center gap-1">
-                        {entry.fileType === 'video' ? <Video size={16} /> : <Camera size={16} />}
-                        {entry.fileType === 'video' ? 'Есть видео' : 'Есть фото'}
+                    {entry.fileUrl && entry.fileType && (
+                      <div className="mt-1 pl-[4.5rem]">
+                        <button
+                          onClick={() => setViewingMedia({ url: entry.fileUrl!, type: entry.fileType! })}
+                          className="m3-btn-text !h-8 !px-3 !text-sm text-[var(--color-md-sys-color-primary)]"
+                        >
+                          Доказательство
+                        </button>
                       </div>
                     )}
                   </div>
@@ -80,6 +87,14 @@ export function HistoryList({ entries, tasks, onDelete }: HistoryListProps) {
         <div className="text-center py-12 text-[var(--color-md-sys-color-on-surface-variant)] m3-body-lg">
           Записей пока нет.
         </div>
+      )}
+
+      {viewingMedia && (
+        <MediaViewer 
+          url={viewingMedia.url} 
+          type={viewingMedia.type} 
+          onClose={() => setViewingMedia(null)} 
+        />
       )}
     </div>
   );
