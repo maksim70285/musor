@@ -158,6 +158,16 @@ async function startServer() {
       writeDB(db);
       io.emit('new_message', newMsg);
     });
+
+    socket.on('spin_roulette', (data: { rouletteId: string, options: string[] }) => {
+      const idx = Math.floor(Math.random() * data.options.length);
+      const result = data.options[idx];
+      io.emit('roulette_spun', {
+        rouletteId: data.rouletteId,
+        result,
+        spinDuration: 2000
+      });
+    });
   });
 
   app.get('/api/users/:username/has-password', (req, res) => {

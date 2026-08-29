@@ -7,6 +7,13 @@ import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import { RouletteGame } from './RouletteGame';
 
+export interface SpinData {
+  rouletteId: string;
+  result: string;
+  spinDuration: number;
+  timestamp: number;
+}
+
 interface ChatProps {
   currentUser: UserName;
   onClose: () => void;
@@ -17,6 +24,7 @@ export function Chat({ currentUser, onClose }: ChatProps) {
   const [inputText, setInputText] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [showRoulette, setShowRoulette] = useState(false);
+  const [currentSpin, setCurrentSpin] = useState<SpinData | null>(null);
   const socketRef = useRef<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -39,6 +47,11 @@ export function Chat({ currentUser, onClose }: ChatProps) {
         if (prev.some(m => m.id === msg.id)) return prev;
         return [...prev, msg];
       });
+    });
+
+    socket.on('roulette_spun', (data: Omit<SpinData, 'timestamp'>) => {
+      setCurrentSpin({ ...data, timestamp: Date.now() });
+      setShowRoulette(true);
     });
 
     return () => {
@@ -94,7 +107,11 @@ export function Chat({ currentUser, onClose }: ChatProps) {
   };
 
   if (showRoulette) {
-    return <RouletteGame onClose={() => setShowRoulette(false)} />;
+    return <RouletteGame 
+      onClose={() => setShowRoulette(false)} 
+      socket={socketRef.current} 
+      currentSpin={currentSpin} 
+    />;
   }
 
   return (

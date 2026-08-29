@@ -5,11 +5,16 @@ import { ArrowLeft, Plus, Trash2, Dices, Save } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 
+import { Socket } from 'socket.io-client';
+import { SpinData } from './Chat';
+
 interface RouletteGameProps {
   onClose: () => void;
+  socket: Socket | null;
+  currentSpin: SpinData | null;
 }
 
-export function RouletteGame({ onClose }: RouletteGameProps) {
+export function RouletteGame({ onClose, socket, currentSpin }: RouletteGameProps) {
   const [roulettes, setRoulettes] = useState<Roulette[]>([]);
   const [activeRoulette, setActiveRoulette] = useState<Roulette | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
@@ -24,6 +29,34 @@ export function RouletteGame({ onClose }: RouletteGameProps) {
   useEffect(() => {
     loadRoulettes();
   }, []);
+
+  useEffect(() => {
+    if (currentSpin && roulettes.length > 0) {
+      const r = roulettes.find(r => r.id === currentSpin.rouletteId);
+      if (r) {
+        setActiveRoulette(r);
+        setIsEditing(false);
+        
+        const elapsed = Date.now() - currentSpin.timestamp;
+        const remaining = currentSpin.spinDuration - elapsed;
+        
+        if (remaining > 0) {
+          setIsSpinning(true);
+          setResult(null);
+          
+          const timer = setTimeout(() => {
+            setResult(currentSpin.result);
+            setIsSpinning(false);
+          }, remaining);
+          
+          return () => clearTimeout(timer);
+        } else {
+          setIsSpinning(false);
+          setResult(currentSpin.result);
+        }
+      }
+    }
+  }, [currentSpin, roulettes]);
 
   const loadRoulettes = async () => {
     const data = await api.getRoulettes();
@@ -74,16 +107,13 @@ export function RouletteGame({ onClose }: RouletteGameProps) {
   };
 
   const spin = () => {
-    if (!activeRoulette || activeRoulette.options.length === 0) return;
+    if (!activeRoulette || activeRoulette.options.length === 0 || isSpinning || !socket) return;
     setIsSpinning(true);
     setResult(null);
-
-    // simple fake spin
-    setTimeout(() => {
-      const idx = Math.floor(Math.random() * activeRoulette.options.length);
-      setResult(activeRoulette.options[idx]);
-      setIsSpinning(false);
-    }, 2000);
+    socket.emit('spin_roulette', {
+      rouletteId: activeRoulette.id,
+      options: activeRoulette.options
+    });
   };
 
   return (
