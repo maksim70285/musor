@@ -20,34 +20,34 @@ export function HistoryList({ entries, tasks, onDelete }: HistoryListProps) {
 
         return (
           <div key={task.id} className="space-y-4">
-            <h3 className="text-xl font-medium flex items-center gap-3">
-              <span className="text-2xl">{task.icon}</span> {task.title}
+            <h3 className="m3-title-lg flex items-center gap-3">
+              <img src={task.icon} alt={task.title} className="w-16 h-16 object-contain [image-rendering:pixelated] pointer-events-none select-none" /> {task.title}
             </h3>
             
-            <div className="bg-[var(--color-md-surface)] border border-[var(--color-md-surface-variant)] rounded-[24px] overflow-hidden">
+            <div className="m3-card-outlined overflow-hidden rounded-[24px]">
               {taskEntries.map((entry, index) => (
                 <div 
                   key={entry.id}
                   className={cn(
                     "flex items-center justify-between px-5 py-4",
-                    index !== taskEntries.length - 1 ? "border-b border-[var(--color-md-surface-variant)]" : ""
+                    index !== taskEntries.length - 1 ? "border-b border-[var(--color-md-sys-color-outline-variant)]" : ""
                   )}
                 >
                   <div className="flex flex-col gap-1">
-                    <div className="flex flex-wrap items-center gap-3 text-base font-normal">
-                      <span className="text-[#CAC4D0] w-12">{formatShortDate(entry.date).slice(0, 5)}</span>
-                      <span className="text-[var(--color-md-surface-variant)]">—</span>
+                    <div className="flex flex-wrap items-center gap-3 m3-body-lg">
+                      <span className="text-[var(--color-md-sys-color-on-surface-variant)] w-12">{formatShortDate(entry.date).slice(0, 5)}</span>
+                      <span className="text-[var(--color-md-sys-color-outline-variant)]">—</span>
                       <span className={cn(
-                        "font-medium",
+                        "m3-title-md",
                         entry.user === 'Артём' ? "text-[var(--color-artem-accent)]" : "text-[var(--color-maxim-accent)]"
                       )}>
                         {entry.user}
                       </span>
-                      <span className="text-[var(--color-md-surface-variant)]">—</span>
-                      <span className="text-[#E6E0E9]">{entry.timeValue}</span>
+                      <span className="text-[var(--color-md-sys-color-outline-variant)]">—</span>
+                      <span className="text-[var(--color-md-sys-color-on-surface)]">{entry.timeValue}</span>
                     </div>
                     {entry.isOutOfOrder && (
-                      <div className="text-sm text-[var(--color-md-error)] mt-1 pl-[4.5rem]">
+                      <div className="m3-body-md text-[var(--color-md-sys-color-error)] mt-1 pl-[4.5rem]">
                         ВНЕ ОЧЕРЕДИ • {entry.outOfOrderReason}
                       </div>
                     )}
@@ -57,10 +57,10 @@ export function HistoryList({ entries, tasks, onDelete }: HistoryListProps) {
                     <button onClick={() => {
                         if (window.confirm('Удалить эту запись?')) onDelete(entry.id);
                       }} 
-                      className="p-2.5 text-[#CAC4D0] hover:text-[var(--color-md-error)] hover:bg-[var(--color-md-surface-variant)] rounded-full transition-colors active:scale-95"
+                      className="m3-icon-btn hover:text-[var(--color-md-sys-color-error)]"
                       title="Удалить"
                     >
-                      <Trash2 size={20} strokeWidth={2} />
+                      <Trash2 size={24} strokeWidth={1.5} />
                     </button>
                   </div>
                 </div>
@@ -71,7 +71,7 @@ export function HistoryList({ entries, tasks, onDelete }: HistoryListProps) {
       })}
       
       {entries.length === 0 && (
-        <div className="text-center py-12 text-[#CAC4D0] text-lg">
+        <div className="text-center py-12 text-[var(--color-md-sys-color-on-surface-variant)] m3-body-lg">
           Записей пока нет.
         </div>
       )}

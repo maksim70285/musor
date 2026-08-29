@@ -46,15 +46,15 @@ export function TaskCard({ id, title, icon, entries, currentUser, onAdd, buttonT
   return (
     <div 
       className={cn(
-        "p-6 sm:p-8 rounded-[28px] transition-all relative overflow-hidden",
+        "p-6 sm:p-8 transition-all relative overflow-hidden",
         isMyTurn 
-          ? "bg-[var(--color-md-secondary-container)] text-[var(--color-md-on-secondary-container)]" 
-          : "bg-[var(--color-md-surface)] border border-[var(--color-md-surface-variant)] text-[#E6E0E9]"
+          ? "bg-[var(--color-md-sys-color-secondary-container)] text-[var(--color-md-sys-color-on-secondary-container)] rounded-[24px] shadow-sm" 
+          : "m3-card-outlined rounded-[24px]"
       )}
     >
       <div className="flex items-center gap-4 mb-6">
-        <span className="text-4xl">{icon}</span>
-        <h2 className="text-2xl font-medium tracking-tight">{title}</h2>
+        <img src={icon} alt={title} className="w-20 h-20 object-contain [image-rendering:pixelated] pointer-events-none select-none" />
+        <h2 className="m3-headline-sm">{title}</h2>
       </div>
       
       <div className="mb-8 min-h-[5rem] flex flex-col justify-center">
@@ -65,13 +65,13 @@ export function TaskCard({ id, title, icon, entries, currentUser, onAdd, buttonT
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="text-[#6DD58C]"
+              className="text-[var(--color-md-sys-color-primary)]"
             >
-              <div className="text-2xl font-medium flex items-center gap-3 mb-2">
+              <div className="m3-headline-sm flex items-center gap-3 mb-2">
                 <Check size={32} strokeWidth={2} />
                 Готово
               </div>
-              <div className="text-[#CAC4D0] font-normal text-sm mt-2">
+              <div className="m3-label-md mt-2 opacity-80 uppercase tracking-widest">
                 СЛЕДУЮЩИЙ: {nextUser}
               </div>
             </motion.div>
@@ -83,15 +83,15 @@ export function TaskCard({ id, title, icon, entries, currentUser, onAdd, buttonT
               exit={{ opacity: 0, y: -10 }}
               className="space-y-4"
             >
-              <div className="font-medium text-lg mb-2 text-[#E6E0E9]">Почему вне очереди?</div>
+              <div className="m3-title-lg mb-2">Почему вне очереди?</div>
               <div className="flex flex-col gap-2">
-                <button onClick={() => submitAdd(true, `${nextUser} не может сейчас`)} className="text-left px-5 py-3.5 rounded-[16px] bg-[var(--color-md-surface-variant)] hover:bg-[#5C5763] text-[#E6E0E9] text-base font-medium transition-colors">
+                <button onClick={() => submitAdd(true, `${nextUser} не может сейчас`)} className="m3-btn-tonal justify-start !px-5 w-full h-[48px]">
                   {nextUser} не может сейчас
                 </button>
-                <button onClick={() => submitAdd(true, 'Меня попросили')} className="text-left px-5 py-3.5 rounded-[16px] bg-[var(--color-md-surface-variant)] hover:bg-[#5C5763] text-[#E6E0E9] text-base font-medium transition-colors">
+                <button onClick={() => submitAdd(true, 'Меня попросили')} className="m3-btn-tonal justify-start !px-5 w-full h-[48px]">
                   Меня попросили
                 </button>
-                <button onClick={() => submitAdd(true, 'Срочно нужно было сделать')} className="text-left px-5 py-3.5 rounded-[16px] bg-[var(--color-md-surface-variant)] hover:bg-[#5C5763] text-[#E6E0E9] text-base font-medium transition-colors">
+                <button onClick={() => submitAdd(true, 'Срочно нужно было сделать')} className="m3-btn-tonal justify-start !px-5 w-full h-[48px]">
                   Срочно нужно было сделать
                 </button>
                 <div className="flex gap-2 mt-2">
@@ -100,14 +100,14 @@ export function TaskCard({ id, title, icon, entries, currentUser, onAdd, buttonT
                     placeholder="Другая причина..."
                     value={customReason}
                     onChange={(e) => setCustomReason(e.target.value)}
-                    className="flex-1 px-5 py-3.5 rounded-[16px] bg-[var(--color-md-surface-variant)] text-[#E6E0E9] placeholder-[#CAC4D0] border-none focus:ring-1 focus:ring-[var(--color-md-primary)] text-base outline-none transition-all"
+                    className="m3-text-field-outlined flex-1 h-[48px]"
                   />
-                  <button onClick={() => submitAdd(true, customReason || 'Другая причина')} className="px-6 py-3.5 rounded-[16px] bg-[var(--color-md-primary)] hover:bg-[#EADDFF] text-[var(--color-md-on-primary)] font-medium text-base transition-colors">
+                  <button onClick={() => submitAdd(true, customReason || 'Другая причина')} className="m3-btn-filled h-[48px]">
                     ОК
                   </button>
                 </div>
               </div>
-              <button onClick={() => setShowOutOfOrder(false)} className="mt-4 px-4 py-2 text-sm text-[var(--color-md-primary)] font-medium transition-colors hover:bg-[var(--color-md-surface-variant)] rounded-[100px] w-fit">
+              <button onClick={() => setShowOutOfOrder(false)} className="m3-btn-text mt-4">
                 Отмена
               </button>
             </motion.div>
@@ -119,15 +119,14 @@ export function TaskCard({ id, title, icon, entries, currentUser, onAdd, buttonT
               exit={{ opacity: 0, y: -10 }}
             >
               <div className={cn(
-                "text-2xl font-bold tracking-tight uppercase mb-3",
-                isMyTurn ? "text-[var(--color-md-on-secondary-container)]" : "text-[#E6E0E9]"
+                "m3-headline-sm font-bold tracking-tight uppercase mb-3"
               )}>
                 {isMyTurn ? 'ТЫ СЛЕДУЮЩИЙ' : `СЛЕДУЮЩИЙ: ${nextUser}`}
               </div>
               {lastEntry && (
                 <div className={cn(
-                  "font-normal text-base",
-                  isMyTurn ? "text-[var(--color-md-on-secondary-container)] opacity-80" : "text-[#CAC4D0]"
+                  "m3-body-lg",
+                  isMyTurn ? "opacity-80" : "text-[var(--color-md-sys-color-on-surface-variant)]"
                 )}>
                   Последний раз: {formatRelativeDate(lastEntry.date)}, {lastEntry.timeValue}
                 </div>
@@ -142,10 +141,7 @@ export function TaskCard({ id, title, icon, entries, currentUser, onAdd, buttonT
           onClick={handleAdd}
           disabled={isSuccess}
           className={cn(
-            "w-full py-5 px-6 rounded-[100px] font-medium text-lg flex items-center justify-center gap-3 transition-colors active:scale-[0.98]",
-            isMyTurn
-              ? "bg-[var(--color-md-primary)] text-[var(--color-md-on-primary)] hover:bg-[#EADDFF]"
-              : "bg-[var(--color-md-surface-variant)] text-[#E6E0E9] hover:bg-[#5C5763]",
+            isMyTurn ? "m3-btn-filled w-full h-[56px] text-[18px]" : "m3-btn-tonal w-full h-[56px] text-[18px]",
             isSuccess && "opacity-50 pointer-events-none"
           )}
         >

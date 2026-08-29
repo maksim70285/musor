@@ -35,11 +35,11 @@ export function UserSelector({ onSelect }: UserSelectorProps) {
         className="w-full text-center space-y-6"
       >
         <div className="space-y-4 mb-8">
-          <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto bg-[var(--color-md-secondary-container)] text-[var(--color-md-on-secondary-container)] mb-4">
+          <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto bg-[var(--color-md-sys-color-secondary-container)] text-[var(--color-md-sys-color-on-secondary-container)] mb-4 shadow-sm">
             {selectedUser ? <Lock size={48} strokeWidth={1.5} /> : <User size={48} strokeWidth={1.5} />}
           </div>
-          <h1 className="text-3xl font-normal tracking-tight text-[#E6E0E9]">Кто вы?</h1>
-          <p className="text-[#CAC4D0] text-base font-normal">
+          <h1 className="m3-display-sm text-[var(--color-md-sys-color-on-background)]">Кто вы?</h1>
+          <p className="m3-body-lg text-[var(--color-md-sys-color-on-surface-variant)]">
             {selectedUser 
               ? (isNewUser ? `Придумайте пароль для входа (${selectedUser})` : `Введите пароль для ${selectedUser}`) 
               : 'Выберите свой профиль'}
@@ -59,41 +59,35 @@ export function UserSelector({ onSelect }: UserSelectorProps) {
                 <button
                   onClick={() => handleUserClick('Артём')}
                   className={cn(
-                    "group relative flex items-center justify-between p-5 rounded-[28px]",
-                    "bg-[var(--color-md-surface)] border border-[var(--color-md-surface-variant)]",
-                    "hover:bg-[var(--color-md-surface-variant)] transition-colors",
-                    "text-left overflow-hidden active:scale-[0.98]"
+                    "group flex items-center justify-between p-5 text-left m3-card-outlined w-full"
                   )}
                 >
                   <div className="relative z-10 flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-full bg-[var(--color-artem-container)] flex items-center justify-center text-[var(--color-artem-accent)] font-medium text-2xl">
+                    <div className="w-14 h-14 rounded-full bg-[var(--color-artem-container)] flex items-center justify-center text-[var(--color-artem-accent)] m3-title-lg">
                       А
                     </div>
                     <div>
-                      <div className="font-normal text-xl text-[#E6E0E9]">Я — Артём</div>
+                      <div className="m3-title-md text-[var(--color-md-sys-color-on-surface)]">Я — Артём</div>
                     </div>
                   </div>
-                  <ArrowRight className="text-[#CAC4D0] group-hover:text-[var(--color-artem-accent)] transition-colors relative z-10" />
+                  <ArrowRight className="text-[var(--color-md-sys-color-on-surface-variant)] group-hover:text-[var(--color-artem-accent)] transition-colors relative z-10" />
                 </button>
 
                 <button
                   onClick={() => handleUserClick('Максим')}
                   className={cn(
-                    "group relative flex items-center justify-between p-5 rounded-[28px]",
-                    "bg-[var(--color-md-surface)] border border-[var(--color-md-surface-variant)]",
-                    "hover:bg-[var(--color-md-surface-variant)] transition-colors",
-                    "text-left overflow-hidden active:scale-[0.98]"
+                    "group flex items-center justify-between p-5 text-left m3-card-outlined w-full"
                   )}
                 >
                   <div className="relative z-10 flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-full bg-[var(--color-maxim-container)] flex items-center justify-center text-[var(--color-maxim-accent)] font-medium text-2xl">
+                    <div className="w-14 h-14 rounded-full bg-[var(--color-maxim-container)] flex items-center justify-center text-[var(--color-maxim-accent)] m3-title-lg">
                       М
                     </div>
                     <div>
-                      <div className="font-normal text-xl text-[#E6E0E9]">Я — Максим</div>
+                      <div className="m3-title-md text-[var(--color-md-sys-color-on-surface)]">Я — Максим</div>
                     </div>
                   </div>
-                  <ArrowRight className="text-[#CAC4D0] group-hover:text-[var(--color-maxim-accent)] transition-colors relative z-10" />
+                  <ArrowRight className="text-[var(--color-md-sys-color-on-surface-variant)] group-hover:text-[var(--color-maxim-accent)] transition-colors relative z-10" />
                 </button>
               </motion.div>
             ) : (
@@ -105,14 +99,14 @@ export function UserSelector({ onSelect }: UserSelectorProps) {
                 onSubmit={handleSubmit}
                 className="space-y-4"
               >
-                <div className="relative">
+                <div className="relative pt-2">
                   <input
                     type="password"
                     placeholder={isNewUser ? "Придумайте пароль" : "Пароль"}
                     autoFocus
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-5 py-4 rounded-[16px] bg-[var(--color-md-surface)] border border-[var(--color-md-surface-variant)] focus:border-[var(--color-md-primary)] focus:ring-1 focus:ring-[var(--color-md-primary)] outline-none transition-all text-center text-xl tracking-widest font-mono text-[#E6E0E9]"
+                    className="m3-text-field-outlined text-center tracking-widest font-mono m3-headline-sm"
                   />
                 </div>
                 
@@ -120,14 +114,14 @@ export function UserSelector({ onSelect }: UserSelectorProps) {
                   <button
                     type="submit"
                     disabled={!password}
-                    className="w-full py-4 rounded-[100px] bg-[var(--color-md-primary)] text-[var(--color-md-on-primary)] font-medium text-lg disabled:opacity-50 disabled:bg-[var(--color-md-surface-variant)] disabled:text-[#E6E0E9] transition-colors active:scale-[0.98]"
+                    className="m3-btn-filled w-full h-[56px] disabled:opacity-30"
                   >
                     {isNewUser ? "Сохранить и войти" : "Войти"}
                   </button>
                   <button
                     type="button"
                     onClick={() => setSelectedUser(null)}
-                    className="w-full py-4 rounded-[100px] text-[var(--color-md-primary)] hover:bg-[var(--color-md-surface-variant)] font-medium transition-colors"
+                    className="m3-btn-text w-full h-[48px]"
                   >
                     Назад
                   </button>

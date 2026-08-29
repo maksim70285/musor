@@ -5,18 +5,20 @@ import { getSortedEntries, getMoscowDateString, getMoscowTimeString } from './ut
 import { UserSelector } from './components/UserSelector';
 import { HistoryList } from './components/HistoryList';
 import { TaskCard } from './components/TaskCard';
-import { LogOut, History, ArrowLeft } from 'lucide-react';
+import { Chat } from './components/Chat';
+import { LogOut, History, ArrowLeft, MessageCircle } from 'lucide-react';
 import { cn } from './lib/utils';
 
 const TASKS = [
-  { id: 'trash' as TaskType, title: 'Мусор', icon: '🗑️', buttonText: 'Я вынес' },
-  { id: 'dishwasher' as TaskType, title: 'Посудомойка', icon: '🍽️', buttonText: 'Я загрузил' },
+  { id: 'trash' as TaskType, title: 'Мусор', icon: 'https://i.ibb.co/p6D4wyF0/IMG-5709.png', buttonText: 'Я вынес' },
+  { id: 'dishwasher' as TaskType, title: 'Посудомойка', icon: 'https://i.ibb.co/Q3PxbfBB/IMG-5708.png', buttonText: 'Я загрузил' },
 ];
 
 export default function App() {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [currentUser, setCurrentUser] = useState<UserName | null>(null);
   const [showHistory, setShowHistory] = useState(false);
+  const [showChat, setShowChat] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -74,16 +76,20 @@ export default function App() {
   };
 
   if (isLoading) {
-    return <div className="min-h-screen flex items-center justify-center text-[var(--color-md-on-surface-variant)]">Загрузка...</div>;
+    return <div className="min-h-screen flex items-center justify-center text-[var(--color-md-sys-color-on-surface-variant)] m3-body-lg">Загрузка...</div>;
   }
 
   if (!currentUser) {
     return <UserSelector onSelect={handleLogin} />;
   }
 
+  if (showChat) {
+    return <Chat currentUser={currentUser} onClose={() => setShowChat(false)} />;
+  }
+
   return (
-    <div className="min-h-[100dvh] pb-20 sm:pb-8 flex flex-col bg-[var(--color-md-bg)] text-[#E6E0E9]">
-      <header className="sticky top-0 z-30 bg-[var(--color-md-bg)]/80 backdrop-blur-md border-b border-[var(--color-md-surface-variant)]">
+    <div className="min-h-[100dvh] pb-20 sm:pb-8 flex flex-col bg-[var(--color-md-sys-color-background)] text-[var(--color-md-sys-color-on-background)]">
+      <header className="sticky top-0 z-30 bg-[var(--color-md-sys-color-background)]/80 backdrop-blur-md border-b border-[var(--color-md-sys-color-surface-variant)]">
         <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className={cn(
@@ -92,16 +98,25 @@ export default function App() {
             )}>
               {currentUser.charAt(0)}
             </div>
-            <span className="font-medium">{currentUser}</span>
+            <span className="m3-title-md">{currentUser}</span>
           </div>
           
-          <button 
-            onClick={handleLogout}
-            className="p-2 text-[#CAC4D0] hover:bg-[var(--color-md-surface-variant)] rounded-full transition-colors active:scale-95"
-            title="Выйти"
-          >
-            <LogOut size={22} strokeWidth={2} />
-          </button>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => setShowChat(true)}
+              className="m3-icon-btn text-[var(--color-md-sys-color-primary)]"
+              title="Чат и рулетка"
+            >
+              <MessageCircle size={24} strokeWidth={1.5} />
+            </button>
+            <button 
+              onClick={handleLogout}
+              className="m3-icon-btn"
+              title="Выйти"
+            >
+              <LogOut size={24} strokeWidth={1.5} />
+            </button>
+          </div>
         </div>
       </header>
 
@@ -122,13 +137,12 @@ export default function App() {
                 />
               ))}
             </div>
-
             <div className="flex justify-center mt-12">
               <button
                 onClick={() => setShowHistory(true)}
-                className="flex items-center gap-2 px-6 py-4 rounded-[100px] font-medium text-base text-[var(--color-md-primary)] hover:bg-[var(--color-md-surface-variant)] transition-colors active:scale-95"
+                className="m3-btn-tonal h-[48px] gap-2"
               >
-                <History size={20} />
+                <History size={20} strokeWidth={1.5} />
                 История записей
               </button>
             </div>
@@ -138,11 +152,11 @@ export default function App() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setShowHistory(false)}
-                className="p-2 -ml-2 rounded-full text-[#CAC4D0] hover:bg-[var(--color-md-surface-variant)] transition-colors active:scale-95"
+                className="m3-icon-btn -ml-2"
               >
-                <ArrowLeft size={24} />
+                <ArrowLeft size={24} strokeWidth={1.5} />
               </button>
-              <h1 className="text-xl font-medium tracking-tight">История</h1>
+              <h1 className="m3-title-lg">История</h1>
             </div>
             
             <HistoryList
@@ -151,14 +165,14 @@ export default function App() {
               onDelete={handleDeleteEntry}
             />
             
-            <div className="pt-8 mt-8 border-t border-[var(--color-md-surface-variant)]">
+            <div className="pt-8 mt-8 border-t border-[var(--color-md-sys-color-surface-variant)]">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {TASKS.map(task => (
-                  <div key={task.id} className="bg-[var(--color-md-surface)] rounded-[20px] p-5 flex items-center justify-between border border-[var(--color-md-surface-variant)]">
-                    <div className="flex items-center gap-3 font-medium text-lg">
-                      <span className="text-2xl">{task.icon}</span> {task.title}
+                  <div key={task.id} className="m3-card-outlined p-5 flex items-center justify-between">
+                    <div className="flex items-center gap-3 m3-title-md">
+                      <img src={task.icon} alt={task.title} className="w-16 h-16 object-contain [image-rendering:pixelated] pointer-events-none select-none" /> {task.title}
                     </div>
-                    <div className="flex gap-4 text-base font-normal">
+                    <div className="flex gap-4 m3-body-lg">
                       <div className="text-[var(--color-artem-accent)]">А: {entries.filter(e => e.taskType === task.id && e.user === 'Артём').length}</div>
                       <div className="text-[var(--color-maxim-accent)]">М: {entries.filter(e => e.taskType === task.id && e.user === 'Максим').length}</div>
                     </div>

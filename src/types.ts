@@ -15,3 +15,18 @@ export interface Entry {
   outOfOrderReason?: string;
   createdAt: number;
 }
+
+export interface ChatMessage {
+  id: string;
+  user: UserName;
+  text?: string;
+  fileUrl?: string;
+  fileType?: 'image' | 'video';
+  createdAt: number;
+}
+
+export interface Roulette {
+  id: string;
+  name: string;
+  options: string[];
+}

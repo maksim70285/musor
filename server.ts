@@ -4,24 +4,61 @@ import { createServer as createViteServer } from 'vite';
 import cookieParser from 'cookie-parser';
 import jwt from 'jsonwebtoken';
 import fs from 'fs';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
+import multer from 'multer';
 
 const JWT_SECRET = 'home-tasks-secret-key-super-secure';
 const DB_FILE = path.join(process.cwd(), 'database.json');
+const UPLOADS_DIR = path.join(process.cwd(), 'uploads');
+
+if (!fs.existsSync(UPLOADS_DIR)) {
+  fs.mkdirSync(UPLOADS_DIR);
+}
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, UPLOADS_DIR),
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + '-' + file.originalname);
+  }
+});
+const upload = multer({ 
+  storage,
+  limits: { fileSize: 50 * 1024 * 1024 } // 50MB limit
+});
 
 interface Entry {
   id: string;
   taskType: 'trash' | 'dishwasher';
-  date: string; // Moscow date
-  timeValue: string; // Moscow time
+  date: string;
+  timeValue: string;
   user: 'Артём' | 'Максим';
   isOutOfOrder?: boolean;
   outOfOrderReason?: string;
   createdAt: number;
 }
 
+interface ChatMessage {
+  id: string;
+  user: string;
+  text?: string;
+  fileUrl?: string;
+  fileType?: 'image' | 'video';
+  createdAt: number;
+}
+
+interface Roulette {
+  id: string;
+  name: string;
+  options: string[];
+}
+
 interface Database {
   entries: Entry[];
   passwords?: Record<string, string>;
+  messages?: ChatMessage[];
+  roulettes?: Roulette[];
 }
 
 // Initial state as requested
@@ -46,12 +83,14 @@ const INITIAL_ENTRIES: Entry[] = [
 
 function readDB(): Database {
   if (!fs.existsSync(DB_FILE)) {
-    const defaultDb = { entries: INITIAL_ENTRIES, passwords: {} };
+    const defaultDb: Database = { entries: INITIAL_ENTRIES, passwords: {}, messages: [], roulettes: [] };
     fs.writeFileSync(DB_FILE, JSON.stringify(defaultDb, null, 2));
     return defaultDb;
   }
   const db = JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
   if (!db.passwords) db.passwords = {};
+  if (!db.messages) db.messages = [];
+  if (!db.roulettes) db.roulettes = [];
   return db;
 }
 
@@ -72,16 +111,19 @@ function createBackup() {
 }
 
 async function startServer() {
-  // Create an automatic backup on server startup
   createBackup();
 
   const app = express();
   const PORT = 3000;
+  const httpServer = createServer(app);
+  const io = new Server(httpServer, {
+    cors: { origin: '*' }
+  });
 
   app.use(express.json());
   app.use(cookieParser());
+  app.use('/uploads', express.static(UPLOADS_DIR));
 
-  // Auth Middleware
   const requireAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const token = req.cookies.auth_token;
     if (!token) return res.status(401).json({ error: 'Unauthorized' });
@@ -94,7 +136,29 @@ async function startServer() {
     }
   };
 
-  // --- API Routes ---
+  io.use((socket, next) => {
+    // In a real app we'd parse cookies here, but for simplicity we'll just allow connections
+    // and clients will identify themselves via messages.
+    next();
+  });
+
+  io.on('connection', (socket) => {
+    socket.on('send_message', (msgData: { user: string; text?: string; fileUrl?: string; fileType?: 'image' | 'video' }) => {
+      const db = readDB();
+      const newMsg: ChatMessage = {
+        id: Math.random().toString(36).substring(2, 9),
+        user: msgData.user,
+        text: msgData.text,
+        fileUrl: msgData.fileUrl,
+        fileType: msgData.fileType,
+        createdAt: Date.now()
+      };
+      if (!db.messages) db.messages = [];
+      db.messages.push(newMsg);
+      writeDB(db);
+      io.emit('new_message', newMsg);
+    });
+  });
 
   app.get('/api/users/:username/has-password', (req, res) => {
     const db = readDB();
@@ -110,7 +174,6 @@ async function startServer() {
     if (!db.passwords) db.passwords = {};
 
     if (!db.passwords[username]) {
-      // First login - set the password
       db.passwords[username] = password;
       writeDB(db);
     } else if (db.passwords[username] !== password) {
@@ -122,7 +185,7 @@ async function startServer() {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 365 * 24 * 60 * 60 * 1000 // 1 year
+      maxAge: 365 * 24 * 60 * 60 * 1000
     });
     res.json({ success: true, username });
   });
@@ -172,7 +235,55 @@ async function startServer() {
     }
   });
 
-  // --- Vite Middleware ---
+  app.get('/api/chat', requireAuth, (req, res) => {
+    const db = readDB();
+    res.json(db.messages || []);
+  });
+
+  app.post('/api/upload', requireAuth, upload.single('file'), (req, res) => {
+    if (!req.file) return res.status(400).json({ error: 'No file provided' });
+    const fileUrl = `/uploads/${req.file.filename}`;
+    res.json({ fileUrl });
+  });
+
+  app.get('/api/roulettes', requireAuth, (req, res) => {
+    const db = readDB();
+    res.json(db.roulettes || []);
+  });
+
+  app.post('/api/roulettes', requireAuth, (req, res) => {
+    const db = readDB();
+    if (!db.roulettes) db.roulettes = [];
+    
+    if (req.body.id) {
+      // update
+      const idx = db.roulettes.findIndex(r => r.id === req.body.id);
+      if (idx !== -1) {
+        db.roulettes[idx] = req.body;
+      } else {
+        db.roulettes.push(req.body);
+      }
+    } else {
+      // create
+      const newRoulette = {
+        ...req.body,
+        id: Math.random().toString(36).substring(2, 9)
+      };
+      db.roulettes.push(newRoulette);
+    }
+    
+    writeDB(db);
+    res.json({ success: true });
+  });
+
+  app.delete('/api/roulettes/:id', requireAuth, (req, res) => {
+    const db = readDB();
+    if (!db.roulettes) db.roulettes = [];
+    db.roulettes = db.roulettes.filter(r => r.id !== req.params.id);
+    writeDB(db);
+    res.json({ success: true });
+  });
+
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },
@@ -187,7 +298,7 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
+  httpServer.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
 }

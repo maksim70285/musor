@@ -1,4 +1,4 @@
-import { Entry } from './types';
+import { Entry, ChatMessage, Roulette } from './types';
 
 export const api = {
   checkPasswordStatus: async (username: string): Promise<boolean> => {
@@ -46,5 +46,37 @@ export const api = {
     await fetch(`/api/entries/${id}`, {
       method: 'DELETE'
     });
+  },
+
+  getMessages: async (): Promise<ChatMessage[]> => {
+    const res = await fetch('/api/chat');
+    if (!res.ok) return [];
+    return res.json();
+  },
+  uploadFile: async (file: File): Promise<string | null> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.fileUrl;
+  },
+  getRoulettes: async (): Promise<Roulette[]> => {
+    const res = await fetch('/api/roulettes');
+    if (!res.ok) return [];
+    return res.json();
+  },
+  saveRoulette: async (roulette: Omit<Roulette, 'id'> | Roulette): Promise<void> => {
+    await fetch('/api/roulettes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(roulette)
+    });
+  },
+  deleteRoulette: async (id: string): Promise<void> => {
+    await fetch(`/api/roulettes/${id}`, { method: 'DELETE' });
   }
 };

@@ -9,3 +9,4 @@ coverage/
 
 database.json
 database.backup.json
+uploads/
