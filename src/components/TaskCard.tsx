@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Entry, TaskType, UserName } from '../types';
+import { api } from '../api';
 import { getLastEntry, getNextUser, formatRelativeDate } from '../utils';
 import { cn } from '../lib/utils';
-import { Check } from 'lucide-react';
+import { Check, Camera, Video, X, Upload } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface TaskCardProps {
@@ -12,7 +13,7 @@ interface TaskCardProps {
   icon: string;
   entries: Entry[];
   currentUser: UserName;
-  onAdd: (taskId: TaskType, isOutOfOrder: boolean, reason?: string) => Promise<void>;
+  onAdd: (taskId: TaskType, isOutOfOrder: boolean, reason?: string, fileUrl?: string, fileType?: 'image' | 'video') => Promise<void>;
   buttonText: string;
 }
 
@@ -21,6 +22,11 @@ export function TaskCard({ id, title, icon, entries, currentUser, onAdd, buttonT
   const [showOutOfOrder, setShowOutOfOrder] = useState(false);
   const [customReason, setCustomReason] = useState('');
   
+  const [showProofOptions, setShowProofOptions] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const taskEntries = entries.filter(e => e.taskType === id);
   const lastEntry = getLastEntry(taskEntries);
   const nextUser = getNextUser(taskEntries);
@@ -31,16 +37,34 @@ export function TaskCard({ id, title, icon, entries, currentUser, onAdd, buttonT
       setShowOutOfOrder(true);
       return;
     }
-    await submitAdd(false);
+    setShowProofOptions(true);
   };
 
-  const submitAdd = async (isOutOfOrder: boolean, reason?: string) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setFile(e.target.files[0]);
+    }
+  };
+
+  const submitAdd = async (isOutOfOrder: boolean, reason?: string, fileUrl?: string, fileType?: 'image' | 'video') => {
     setShowOutOfOrder(false);
-    await onAdd(id, isOutOfOrder, reason);
+    setShowProofOptions(false);
+    setIsUploading(true);
+    await onAdd(id, isOutOfOrder, reason, fileUrl, fileType);
+    setIsUploading(false);
+    setFile(null);
     setIsSuccess(true);
     setTimeout(() => {
       setIsSuccess(false);
     }, 3000);
+  };
+
+  const handleUploadAndSubmit = async () => {
+    if (!file) return;
+    setIsUploading(true);
+    const fileUrl = await api.uploadFile(file);
+    const fileType = file.type.startsWith('video/') ? 'video' : 'image';
+    await submitAdd(false, undefined, fileUrl || undefined, fileUrl ? fileType : undefined);
   };
 
   return (
@@ -74,6 +98,45 @@ export function TaskCard({ id, title, icon, entries, currentUser, onAdd, buttonT
               <div className="m3-label-md mt-2 opacity-80 uppercase tracking-widest">
                 СЛЕДУЮЩИЙ: {nextUser}
               </div>
+            </motion.div>
+          ) : showProofOptions ? (
+            <motion.div
+              key="proof-options"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="space-y-4"
+            >
+              <div className="m3-title-lg mb-2">Задача выполнена</div>
+              {!file ? (
+                <div className="flex flex-col gap-2">
+                  <input type="file" ref={fileInputRef} className="hidden" accept="image/*,video/*" onChange={handleFileChange} />
+                  <button onClick={() => fileInputRef.current?.click()} className="m3-btn-tonal justify-start !px-5 w-full h-[48px] gap-2">
+                    <Camera size={20} /> Добавить доказательство
+                  </button>
+                  <button onClick={() => submitAdd(false)} className="m3-btn-filled justify-start !px-5 w-full h-[48px]">
+                    Просто выполнить
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="w-full h-32 bg-black rounded-lg overflow-hidden flex items-center justify-center">
+                    {file.type.startsWith('video/') ? (
+                      <Video size={32} className="text-white" />
+                    ) : (
+                      <img src={URL.createObjectURL(file)} className="h-full object-contain" />
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => setFile(null)} className="m3-btn-tonal flex-1 h-[48px]">
+                      <X size={20} />
+                    </button>
+                    <button onClick={handleUploadAndSubmit} className="m3-btn-filled flex-[2] h-[48px]" disabled={isUploading}>
+                      {isUploading ? '...' : 'Отправить'}
+                    </button>
+                  </div>
+                </div>
+              )}
             </motion.div>
           ) : showOutOfOrder ? (
             <motion.div
@@ -135,17 +198,17 @@ export function TaskCard({ id, title, icon, entries, currentUser, onAdd, buttonT
           )}
         </AnimatePresence>
       </div>
-
-      {!showOutOfOrder && (
+ 
+      {!showOutOfOrder && !showProofOptions && (
         <button
           onClick={handleAdd}
-          disabled={isSuccess}
+          disabled={isSuccess || isUploading}
           className={cn(
             isMyTurn ? "m3-btn-filled w-full h-[56px] text-[18px]" : "m3-btn-tonal w-full h-[56px] text-[18px]",
-            isSuccess && "opacity-50 pointer-events-none"
+            (isSuccess || isUploading) && "opacity-50 pointer-events-none"
           )}
         >
-          {buttonText}
+          {isUploading ? '...' : buttonText}
         </button>
       )}
     </div>

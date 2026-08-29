@@ -51,7 +51,7 @@ export default function App() {
     setCurrentUser(null);
   };
 
-  const handleQuickAdd = async (taskId: TaskType, isOutOfOrder: boolean = false, reason?: string) => {
+  const handleQuickAdd = async (taskId: TaskType, isOutOfOrder: boolean = false, reason?: string, fileUrl?: string, fileType?: 'image' | 'video') => {
     if (!currentUser) return;
     
     const newEntry = {
@@ -61,7 +61,9 @@ export default function App() {
       timeType: 'exact' as const,
       timeValue: getMoscowTimeString(),
       isOutOfOrder,
-      outOfOrderReason: reason
+      outOfOrderReason: reason,
+      fileUrl,
+      fileType
     };
     
     await api.addEntry(newEntry);

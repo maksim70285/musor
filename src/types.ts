@@ -13,6 +13,8 @@ export interface Entry {
   timeValue: string;
   isOutOfOrder?: boolean;
   outOfOrderReason?: string;
+  fileUrl?: string;
+  fileType?: 'image' | 'video';
   createdAt: number;
 }
 

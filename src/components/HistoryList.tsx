@@ -1,7 +1,7 @@
 import React from 'react';
 import { Entry, TaskType } from '../types';
 import { formatShortDate } from '../utils';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Camera, Video } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 interface HistoryListProps {
@@ -49,6 +49,12 @@ export function HistoryList({ entries, tasks, onDelete }: HistoryListProps) {
                     {entry.isOutOfOrder && (
                       <div className="m3-body-md text-[var(--color-md-sys-color-error)] mt-1 pl-[4.5rem]">
                         ВНЕ ОЧЕРЕДИ • {entry.outOfOrderReason}
+                      </div>
+                    )}
+                    {entry.fileUrl && (
+                      <div className="m3-body-md text-[var(--color-md-sys-color-primary)] mt-1 pl-[4.5rem] flex items-center gap-1">
+                        {entry.fileType === 'video' ? <Video size={16} /> : <Camera size={16} />}
+                        {entry.fileType === 'video' ? 'Есть видео' : 'Есть фото'}
                       </div>
                     )}
                   </div>
