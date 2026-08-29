@@ -46,15 +46,15 @@ export function TaskCard({ id, title, icon, entries, currentUser, onAdd, buttonT
   return (
     <div 
       className={cn(
-        "p-6 sm:p-8 rounded-[2rem] border-2 transition-all relative overflow-hidden",
+        "p-6 sm:p-8 rounded-[28px] transition-all relative overflow-hidden",
         isMyTurn 
-          ? "border-blue-500/30 bg-blue-50 dark:border-blue-500/20 dark:bg-blue-900/10 shadow-lg shadow-blue-500/10" 
-          : "border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900"
+          ? "bg-[var(--color-md-secondary-container)] text-[var(--color-md-on-secondary-container)]" 
+          : "bg-[var(--color-md-surface)] border border-[var(--color-md-surface-variant)] text-[#E6E0E9]"
       )}
     >
-      <div className="flex items-center gap-3 mb-6">
-        <span className="text-3xl sm:text-4xl">{icon}</span>
-        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight uppercase">{title}</h2>
+      <div className="flex items-center gap-4 mb-6">
+        <span className="text-4xl">{icon}</span>
+        <h2 className="text-2xl font-medium tracking-tight">{title}</h2>
       </div>
       
       <div className="mb-8 min-h-[5rem] flex flex-col justify-center">
@@ -65,13 +65,13 @@ export function TaskCard({ id, title, icon, entries, currentUser, onAdd, buttonT
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="text-green-600 dark:text-green-400"
+              className="text-[#6DD58C]"
             >
-              <div className="text-2xl font-bold flex items-center gap-2 mb-1">
-                <Check size={28} />
+              <div className="text-2xl font-medium flex items-center gap-3 mb-2">
+                <Check size={32} strokeWidth={2} />
                 Готово
               </div>
-              <div className="text-slate-500 dark:text-slate-400 font-medium uppercase tracking-widest text-sm mt-2">
+              <div className="text-[#CAC4D0] font-normal text-sm mt-2">
                 СЛЕДУЮЩИЙ: {nextUser}
               </div>
             </motion.div>
@@ -81,33 +81,33 @@ export function TaskCard({ id, title, icon, entries, currentUser, onAdd, buttonT
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="space-y-3"
+              className="space-y-4"
             >
-              <div className="font-bold text-lg mb-2">Почему вне очереди?</div>
-              <div className="grid grid-cols-1 gap-2">
-                <button onClick={() => submitAdd(true, `${nextUser} не может сейчас`)} className="text-left px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-sm font-medium transition-colors">
+              <div className="font-medium text-lg mb-2 text-[#E6E0E9]">Почему вне очереди?</div>
+              <div className="flex flex-col gap-2">
+                <button onClick={() => submitAdd(true, `${nextUser} не может сейчас`)} className="text-left px-5 py-3.5 rounded-[16px] bg-[var(--color-md-surface-variant)] hover:bg-[#5C5763] text-[#E6E0E9] text-base font-medium transition-colors">
                   {nextUser} не может сейчас
                 </button>
-                <button onClick={() => submitAdd(true, 'Меня попросили')} className="text-left px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-sm font-medium transition-colors">
+                <button onClick={() => submitAdd(true, 'Меня попросили')} className="text-left px-5 py-3.5 rounded-[16px] bg-[var(--color-md-surface-variant)] hover:bg-[#5C5763] text-[#E6E0E9] text-base font-medium transition-colors">
                   Меня попросили
                 </button>
-                <button onClick={() => submitAdd(true, 'Срочно нужно было сделать')} className="text-left px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-sm font-medium transition-colors">
+                <button onClick={() => submitAdd(true, 'Срочно нужно было сделать')} className="text-left px-5 py-3.5 rounded-[16px] bg-[var(--color-md-surface-variant)] hover:bg-[#5C5763] text-[#E6E0E9] text-base font-medium transition-colors">
                   Срочно нужно было сделать
                 </button>
-                <div className="flex gap-2 mt-1">
+                <div className="flex gap-2 mt-2">
                   <input
                     type="text"
                     placeholder="Другая причина..."
                     value={customReason}
                     onChange={(e) => setCustomReason(e.target.value)}
-                    className="flex-1 px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 border-none focus:ring-2 focus:ring-blue-500 text-sm outline-none"
+                    className="flex-1 px-5 py-3.5 rounded-[16px] bg-[var(--color-md-surface-variant)] text-[#E6E0E9] placeholder-[#CAC4D0] border-none focus:ring-1 focus:ring-[var(--color-md-primary)] text-base outline-none transition-all"
                   />
-                  <button onClick={() => submitAdd(true, customReason || 'Другая причина')} className="px-4 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm transition-colors">
+                  <button onClick={() => submitAdd(true, customReason || 'Другая причина')} className="px-6 py-3.5 rounded-[16px] bg-[var(--color-md-primary)] hover:bg-[#EADDFF] text-[var(--color-md-on-primary)] font-medium text-base transition-colors">
                     ОК
                   </button>
                 </div>
               </div>
-              <button onClick={() => setShowOutOfOrder(false)} className="mt-2 text-sm text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
+              <button onClick={() => setShowOutOfOrder(false)} className="mt-4 px-4 py-2 text-sm text-[var(--color-md-primary)] font-medium transition-colors hover:bg-[var(--color-md-surface-variant)] rounded-[100px] w-fit">
                 Отмена
               </button>
             </motion.div>
@@ -119,13 +119,16 @@ export function TaskCard({ id, title, icon, entries, currentUser, onAdd, buttonT
               exit={{ opacity: 0, y: -10 }}
             >
               <div className={cn(
-                "text-2xl sm:text-3xl font-black tracking-tight uppercase mb-2",
-                isMyTurn ? "text-blue-600 dark:text-blue-400" : ""
+                "text-2xl font-bold tracking-tight uppercase mb-3",
+                isMyTurn ? "text-[var(--color-md-on-secondary-container)]" : "text-[#E6E0E9]"
               )}>
                 {isMyTurn ? 'ТЫ СЛЕДУЮЩИЙ' : `СЛЕДУЮЩИЙ: ${nextUser}`}
               </div>
               {lastEntry && (
-                <div className="text-slate-500 dark:text-slate-400 font-medium">
+                <div className={cn(
+                  "font-normal text-base",
+                  isMyTurn ? "text-[var(--color-md-on-secondary-container)] opacity-80" : "text-[#CAC4D0]"
+                )}>
                   Последний раз: {formatRelativeDate(lastEntry.date)}, {lastEntry.timeValue}
                 </div>
               )}
@@ -139,10 +142,10 @@ export function TaskCard({ id, title, icon, entries, currentUser, onAdd, buttonT
           onClick={handleAdd}
           disabled={isSuccess}
           className={cn(
-            "w-full py-4 px-6 rounded-2xl font-bold text-xl flex items-center justify-center gap-3 transition-transform active:scale-[0.98]",
+            "w-full py-5 px-6 rounded-[100px] font-medium text-lg flex items-center justify-center gap-3 transition-colors active:scale-[0.98]",
             isMyTurn
-              ? "bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/25"
-              : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700",
+              ? "bg-[var(--color-md-primary)] text-[var(--color-md-on-primary)] hover:bg-[#EADDFF]"
+              : "bg-[var(--color-md-surface-variant)] text-[#E6E0E9] hover:bg-[#5C5763]",
             isSuccess && "opacity-50 pointer-events-none"
           )}
         >

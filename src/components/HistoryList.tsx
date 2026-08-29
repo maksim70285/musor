@@ -12,39 +12,42 @@ interface HistoryListProps {
 
 export function HistoryList({ entries, tasks, onDelete }: HistoryListProps) {
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 mt-6">
       {tasks.map(task => {
         const taskEntries = entries.filter(e => e.taskType === task.id);
         
         if (taskEntries.length === 0) return null;
 
         return (
-          <div key={task.id} className="space-y-3">
-            <h3 className="text-lg font-bold flex items-center gap-2 mb-4">
-              <span>{task.icon}</span> {task.title}
+          <div key={task.id} className="space-y-4">
+            <h3 className="text-xl font-medium flex items-center gap-3">
+              <span className="text-2xl">{task.icon}</span> {task.title}
             </h3>
             
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
+            <div className="bg-[var(--color-md-surface)] border border-[var(--color-md-surface-variant)] rounded-[24px] overflow-hidden">
               {taskEntries.map((entry, index) => (
                 <div 
                   key={entry.id}
                   className={cn(
-                    "flex items-center justify-between p-4",
-                    index !== taskEntries.length - 1 ? "border-b border-slate-100 dark:border-slate-800" : ""
+                    "flex items-center justify-between px-5 py-4",
+                    index !== taskEntries.length - 1 ? "border-b border-[var(--color-md-surface-variant)]" : ""
                   )}
                 >
                   <div className="flex flex-col gap-1">
-                    <div className="flex flex-wrap items-center gap-2 text-sm sm:text-base font-medium">
-                      <span className="text-slate-500 w-12">{formatShortDate(entry.date).slice(0, 5)}</span>
-                      <span className="text-slate-700 dark:text-slate-600">—</span>
-                      <span className={entry.user === 'Артём' ? "text-blue-500" : "text-green-500"}>
+                    <div className="flex flex-wrap items-center gap-3 text-base font-normal">
+                      <span className="text-[#CAC4D0] w-12">{formatShortDate(entry.date).slice(0, 5)}</span>
+                      <span className="text-[var(--color-md-surface-variant)]">—</span>
+                      <span className={cn(
+                        "font-medium",
+                        entry.user === 'Артём' ? "text-[var(--color-artem-accent)]" : "text-[var(--color-maxim-accent)]"
+                      )}>
                         {entry.user}
                       </span>
-                      <span className="text-slate-700 dark:text-slate-600">—</span>
-                      <span className="text-slate-400">{entry.timeValue}</span>
+                      <span className="text-[var(--color-md-surface-variant)]">—</span>
+                      <span className="text-[#E6E0E9]">{entry.timeValue}</span>
                     </div>
                     {entry.isOutOfOrder && (
-                      <div className="text-xs text-amber-500/80 mt-1 pl-16">
+                      <div className="text-sm text-[var(--color-md-error)] mt-1 pl-[4.5rem]">
                         ВНЕ ОЧЕРЕДИ • {entry.outOfOrderReason}
                       </div>
                     )}
@@ -54,10 +57,10 @@ export function HistoryList({ entries, tasks, onDelete }: HistoryListProps) {
                     <button onClick={() => {
                         if (window.confirm('Удалить эту запись?')) onDelete(entry.id);
                       }} 
-                      className="p-2 text-slate-400 hover:text-red-500 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                      className="p-2.5 text-[#CAC4D0] hover:text-[var(--color-md-error)] hover:bg-[var(--color-md-surface-variant)] rounded-full transition-colors active:scale-95"
                       title="Удалить"
                     >
-                      <Trash2 size={18} />
+                      <Trash2 size={20} strokeWidth={2} />
                     </button>
                   </div>
                 </div>
@@ -68,7 +71,7 @@ export function HistoryList({ entries, tasks, onDelete }: HistoryListProps) {
       })}
       
       {entries.length === 0 && (
-        <div className="text-center py-8 text-slate-500">
+        <div className="text-center py-12 text-[#CAC4D0] text-lg">
           Записей пока нет.
         </div>
       )}

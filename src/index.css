@@ -1,42 +1,31 @@
 @import "tailwindcss";
 
 @theme {
-  --color-artem-light: #eff6ff;
-  --color-artem-border-light: #bfdbfe;
-  --color-artem-dark: #172554;
-  --color-artem-border-dark: #1e3a8a;
-
-  --color-maxim-light: #f0fdf4;
-  --color-maxim-border-light: #bbf7d0;
-  --color-maxim-dark: #052e16;
-  --color-maxim-border-dark: #14532d;
+  --color-md-bg: #141218;
+  --color-md-surface: #211F26;
+  --color-md-surface-variant: #49454F;
+  --color-md-primary: #D0BCFF;
+  --color-md-on-primary: #381E72;
+  --color-md-primary-container: #4F378B;
+  --color-md-on-primary-container: #EADDFF;
+  --color-md-secondary-container: #4A4458;
+  --color-md-on-secondary-container: #E8DEF8;
+  --color-md-error: #F2B8B5;
+  --color-md-on-error: #601410;
+  
+  --color-artem-accent: #A8C7FA;
+  --color-artem-container: #004A77;
+  --color-maxim-accent: #6DD58C;
+  --color-maxim-container: #0F5223;
 }
 
 @layer base {
-  :root {
-    --background: #ffffff;
-    --foreground: #0f172a;
-    --card: #ffffff;
-    --card-foreground: #0f172a;
-    --border: #e2e8f0;
-    --muted: #f1f5f9;
-    --muted-foreground: #64748b;
-  }
-  
-  .dark {
-    --background: #0f172a;
-    --foreground: #f8fafc;
-    --card: #1e293b;
-    --card-foreground: #f8fafc;
-    --border: #334155;
-    --muted: #334155;
-    --muted-foreground: #94a3b8;
+  body {
+    background-color: #141218;
+    color: #E6E0E9;
+    font-family: Roboto, system-ui, -apple-system, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    @apply antialiased;
   }
 }
 
-body {
-  background-color: var(--background);
-  color: var(--foreground);
-  font-family: system-ui, -apple-system, sans-serif;
-  -webkit-tap-highlight-color: transparent;
-}
