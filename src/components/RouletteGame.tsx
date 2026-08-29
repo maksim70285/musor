@@ -28,7 +28,25 @@ export function RouletteGame({ onClose, socket, currentSpin }: RouletteGameProps
 
   useEffect(() => {
     loadRoulettes();
-  }, []);
+
+    if (socket) {
+      const handleRoulettesUpdated = (updatedRoulettes: Roulette[]) => {
+        setRoulettes(updatedRoulettes);
+      };
+      
+      const handleConnect = () => {
+        loadRoulettes();
+      };
+      
+      socket.on('roulettes_updated', handleRoulettesUpdated);
+      socket.on('connect', handleConnect);
+      
+      return () => {
+        socket.off('roulettes_updated', handleRoulettesUpdated);
+        socket.off('connect', handleConnect);
+      };
+    }
+  }, [socket]);
 
   useEffect(() => {
     if (currentSpin && roulettes.length > 0) {

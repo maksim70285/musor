@@ -2,10 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ChatMessage, UserName, Roulette } from '../types';
 import { api } from '../api';
 import { ArrowLeft, Send, Image as ImageIcon, Video, Dices, Play } from 'lucide-react';
-import { io, Socket } from 'socket.io-client';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import { RouletteGame } from './RouletteGame';
+import { socket } from '../socket';
 
 export interface SpinData {
   rouletteId: string;
@@ -25,7 +25,6 @@ export function Chat({ currentUser, onClose }: ChatProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [showRoulette, setShowRoulette] = useState(false);
   const [currentSpin, setCurrentSpin] = useState<SpinData | null>(null);
-  const socketRef = useRef<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -33,29 +32,32 @@ export function Chat({ currentUser, onClose }: ChatProps) {
     // Load initial messages
     api.getMessages().then(setMessages);
 
-    // Connect to WebSocket
-    const socket = io(window.location.origin, { 
-      path: '/socket.io',
-      reconnection: true,
-      transports: ['polling', 'websocket']
-    });
-    socketRef.current = socket;
-
-    socket.on('new_message', (msg: ChatMessage) => {
+    const handleNewMessage = (msg: ChatMessage) => {
       setMessages(prev => {
         // Prevent duplicate if already in state
         if (prev.some(m => m.id === msg.id)) return prev;
         return [...prev, msg];
       });
-    });
+    };
 
-    socket.on('roulette_spun', (data: Omit<SpinData, 'timestamp'>) => {
+    const handleRouletteSpun = (data: Omit<SpinData, 'timestamp'>) => {
       setCurrentSpin({ ...data, timestamp: Date.now() });
       setShowRoulette(true);
-    });
+    };
+
+    const handleConnect = () => {
+      // Re-fetch messages on reconnect to avoid missing updates
+      api.getMessages().then(setMessages);
+    };
+
+    socket.on('new_message', handleNewMessage);
+    socket.on('roulette_spun', handleRouletteSpun);
+    socket.on('connect', handleConnect);
 
     return () => {
-      socket.disconnect();
+      socket.off('new_message', handleNewMessage);
+      socket.off('roulette_spun', handleRouletteSpun);
+      socket.off('connect', handleConnect);
     };
   }, []);
 
@@ -65,8 +67,8 @@ export function Chat({ currentUser, onClose }: ChatProps) {
 
   const handleSend = () => {
     if (!inputText.trim() && !isUploading) return;
-    if (socketRef.current && inputText.trim()) {
-      socketRef.current.emit('send_message', { user: currentUser, text: inputText.trim() });
+    if (socket.connected && inputText.trim()) {
+      socket.emit('send_message', { user: currentUser, text: inputText.trim() });
       setInputText('');
     }
   };
@@ -91,8 +93,8 @@ export function Chat({ currentUser, onClose }: ChatProps) {
     setIsUploading(true);
     try {
       const fileUrl = await api.uploadFile(file);
-      if (fileUrl && socketRef.current) {
-        socketRef.current.emit('send_message', {
+      if (fileUrl && socket.connected) {
+        socket.emit('send_message', {
           user: currentUser,
           fileUrl,
           fileType: isVideo ? 'video' : 'image'
@@ -109,7 +111,7 @@ export function Chat({ currentUser, onClose }: ChatProps) {
   if (showRoulette) {
     return <RouletteGame 
       onClose={() => setShowRoulette(false)} 
-      socket={socketRef.current} 
+      socket={socket} 
       currentSpin={currentSpin} 
     />;
   }

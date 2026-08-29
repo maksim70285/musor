@@ -230,6 +230,7 @@ async function startServer() {
     const db = readDB();
     db.entries.push(newEntry);
     writeDB(db);
+    io.emit('entries_updated', db.entries);
     res.json(newEntry);
   });
 
@@ -239,6 +240,7 @@ async function startServer() {
     db.entries = db.entries.filter(e => e.id !== req.params.id);
     if (db.entries.length < initialLen) {
       writeDB(db);
+      io.emit('entries_updated', db.entries);
       res.json({ success: true });
     } else {
       res.status(404).json({ error: 'Not found' });
@@ -283,6 +285,7 @@ async function startServer() {
     }
     
     writeDB(db);
+    io.emit('roulettes_updated', db.roulettes);
     res.json({ success: true });
   });
 
@@ -291,6 +294,7 @@ async function startServer() {
     if (!db.roulettes) db.roulettes = [];
     db.roulettes = db.roulettes.filter(r => r.id !== req.params.id);
     writeDB(db);
+    io.emit('roulettes_updated', db.roulettes);
     res.json({ success: true });
   });
 

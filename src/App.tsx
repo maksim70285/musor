@@ -8,6 +8,7 @@ import { TaskCard } from './components/TaskCard';
 import { Chat } from './components/Chat';
 import { LogOut, History, ArrowLeft, MessageCircle } from 'lucide-react';
 import { cn } from './lib/utils';
+import { socket } from './socket';
 
 const TASKS = [
   { id: 'trash' as TaskType, title: 'Мусор', icon: 'https://i.ibb.co/p6D4wyF0/IMG-5709.png', buttonText: 'Я вынес' },
@@ -28,10 +29,33 @@ export default function App() {
         setCurrentUser(user as UserName);
         const loadedEntries = await api.getEntries();
         setEntries(getSortedEntries(loadedEntries));
+        socket.connect();
       }
       setIsLoading(false);
     };
     loadData();
+
+    const handleEntriesUpdated = (updatedEntries: Entry[]) => {
+      setEntries(getSortedEntries(updatedEntries));
+    };
+
+    const handleConnect = async () => {
+      // Re-fetch data on reconnect to avoid missed updates
+      const user = await api.me();
+      if (user) {
+        const loadedEntries = await api.getEntries();
+        setEntries(getSortedEntries(loadedEntries));
+      }
+    };
+
+    socket.on('entries_updated', handleEntriesUpdated);
+    socket.on('connect', handleConnect);
+
+    return () => {
+      socket.off('entries_updated', handleEntriesUpdated);
+      socket.off('connect', handleConnect);
+      socket.disconnect();
+    };
   }, []);
 
   const handleLogin = async (user: UserName, password?: string) => {
@@ -41,6 +65,7 @@ export default function App() {
       setCurrentUser(user);
       const loadedEntries = await api.getEntries();
       setEntries(getSortedEntries(loadedEntries));
+      socket.connect();
     } else {
       alert("Неверный пароль");
     }
@@ -49,6 +74,7 @@ export default function App() {
   const handleLogout = async () => {
     await api.logout();
     setCurrentUser(null);
+    socket.disconnect();
   };
 
   const handleQuickAdd = async (taskId: TaskType, isOutOfOrder: boolean = false, reason?: string, fileUrl?: string, fileType?: 'image' | 'video') => {
@@ -67,14 +93,12 @@ export default function App() {
     };
     
     await api.addEntry(newEntry);
-    const updatedEntries = await api.getEntries();
-    setEntries(getSortedEntries(updatedEntries));
+    // Local state will be updated via socket 'entries_updated' event
   };
 
   const handleDeleteEntry = async (id: string) => {
     await api.deleteEntry(id);
-    const updatedEntries = await api.getEntries();
-    setEntries(getSortedEntries(updatedEntries));
+    // Local state will be updated via socket 'entries_updated' event
   };
 
   if (isLoading) {
