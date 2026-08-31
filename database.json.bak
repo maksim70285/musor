@@ -1,0 +1,26 @@
+{
+  "entries": [
+    {
+      "id": "init-1",
+      "taskType": "trash",
+      "date": "2026-08-28",
+      "timeValue": "утром",
+      "user": "Артём",
+      "createdAt": 1788134422905
+    },
+    {
+      "id": "init-2",
+      "taskType": "dishwasher",
+      "date": "2026-08-28",
+      "timeValue": "утром",
+      "user": "Артём",
+      "createdAt": 1788134423905
+    }
+  ],
+  "passwords": {
+    "Максим": "1"
+  },
+  "messages": [],
+  "roulettes": [],
+  "avatars": {}
+}

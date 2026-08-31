@@ -4,14 +4,16 @@ import { formatShortDate } from '../utils';
 import { Trash2 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { MediaViewer } from './MediaViewer';
+import { UserAvatar } from './UserAvatar';
 
 interface HistoryListProps {
   entries: Entry[];
   tasks: { id: TaskType; title: string; icon: string }[];
   onDelete: (id: string) => void;
+  avatars: Record<string, string>;
 }
 
-export function HistoryList({ entries, tasks, onDelete }: HistoryListProps) {
+export function HistoryList({ entries, tasks, onDelete, avatars }: HistoryListProps) {
   const [viewingMedia, setViewingMedia] = useState<{url: string, type: 'image' | 'video'} | null>(null);
 
   return (
@@ -24,7 +26,7 @@ export function HistoryList({ entries, tasks, onDelete }: HistoryListProps) {
         return (
           <div key={task.id} className="space-y-4">
             <h3 className="m3-title-lg flex items-center gap-3">
-              <img src={task.icon} alt={task.title} className="w-16 h-16 object-contain [image-rendering:pixelated] pointer-events-none select-none" /> {task.title}
+              <img loading="lazy" src={task.icon} alt={task.title} className="w-16 h-16 object-contain [image-rendering:pixelated] pointer-events-none select-none" /> {task.title}
             </h3>
             
             <div className="m3-card-outlined overflow-hidden rounded-[24px]">
@@ -41,9 +43,10 @@ export function HistoryList({ entries, tasks, onDelete }: HistoryListProps) {
                       <span className="text-[var(--color-md-sys-color-on-surface-variant)] w-12">{formatShortDate(entry.date).slice(0, 5)}</span>
                       <span className="text-[var(--color-md-sys-color-outline-variant)]">—</span>
                       <span className={cn(
-                        "m3-title-md",
+                        "m3-title-md flex items-center gap-1.5",
                         entry.user === 'Артём' ? "text-[var(--color-artem-accent)]" : "text-[var(--color-maxim-accent)]"
                       )}>
+                        <UserAvatar user={entry.user} avatarUrl={avatars[entry.user]} className="w-5 h-5 text-[10px]" />
                         {entry.user}
                       </span>
                       <span className="text-[var(--color-md-sys-color-outline-variant)]">—</span>

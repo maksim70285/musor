@@ -7,8 +7,7 @@ export const api = {
     const data = await res.json();
     return data.hasPassword;
   },
-
-  login: async (username: string, password: string):Promise<boolean> => {
+  login: async (username: string, password: string): Promise<boolean> => {
     const res = await fetch('/api/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -16,38 +15,44 @@ export const api = {
     });
     return res.ok;
   },
-
   logout: async () => {
     await fetch('/api/logout', { method: 'POST' });
   },
-
+  getAvatars: async (): Promise<Record<string, string>> => {
+    const res = await fetch('/api/avatars');
+    if (!res.ok) return {};
+    return res.json();
+  },
+  updateAvatar: async (fileUrl: string | null): Promise<void> => {
+    await fetch('/api/avatars', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fileUrl })
+    });
+  },
   me: async (): Promise<string | null> => {
     const res = await fetch('/api/me');
     if (!res.ok) return null;
     const data = await res.json();
     return data.user;
   },
-
   getEntries: async (): Promise<Entry[]> => {
     const res = await fetch('/api/entries');
     if (!res.ok) return [];
     return res.json();
   },
-  
-  addEntry: async (entry: Omit<Entry, 'id' | 'createdAt'>): Promise<void> => {
+  addEntry: async (entry: Entry): Promise<void> => {
     await fetch('/api/entries', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(entry)
     });
   },
-
   deleteEntry: async (id: string): Promise<void> => {
     await fetch(`/api/entries/${id}`, {
       method: 'DELETE'
     });
   },
-
   getMessages: async (): Promise<ChatMessage[]> => {
     const res = await fetch('/api/chat');
     if (!res.ok) return [];

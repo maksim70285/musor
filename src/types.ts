@@ -32,3 +32,4 @@ export interface Roulette {
   name: string;
   options: string[];
 }
+export type Avatars = Record<string, string>;

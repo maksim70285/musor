@@ -124,7 +124,7 @@ async function startServer() {
 
   app.use(express.json());
   app.use(cookieParser());
-  app.use('/uploads', express.static(UPLOADS_DIR, { maxAge: '1y' }));
+  app.use('/uploads', express.static(UPLOADS_DIR));
 
   const requireAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const token = req.cookies.auth_token;
@@ -248,13 +248,13 @@ async function startServer() {
   app.post('/api/entries', requireAuth, (req, res) => {
     const newEntry = {
       ...req.body,
-      id: req.body.id || Math.random().toString(36).substring(2, 9),
-      createdAt: req.body.createdAt || Date.now()
+      id: Math.random().toString(36).substring(2, 9),
+      createdAt: Date.now()
     };
     const db = readDB();
     db.entries.push(newEntry);
     writeDB(db);
-    io.emit('entry_added', newEntry);
+    io.emit('entries_updated', db.entries);
     res.json(newEntry);
   });
 
@@ -264,7 +264,7 @@ async function startServer() {
     db.entries = db.entries.filter(e => e.id !== req.params.id);
     if (db.entries.length < initialLen) {
       writeDB(db);
-      io.emit('entry_deleted', req.params.id);
+      io.emit('entries_updated', db.entries);
       res.json({ success: true });
     } else {
       res.status(404).json({ error: 'Not found' });

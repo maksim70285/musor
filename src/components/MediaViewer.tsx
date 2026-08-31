@@ -28,7 +28,7 @@ export function MediaViewer({ url, type, onClose }: MediaViewerProps) {
           {type === 'image' ? (
             <img src={url} alt="Доказательство" className="max-w-full max-h-[80vh] object-contain" />
           ) : (
-            <video src={url} controls className="max-w-full max-h-[80vh]" />
+            <video preload="metadata" src={url} controls className="max-w-full max-h-[80vh]" />
           )}
         </div>
       </motion.div>

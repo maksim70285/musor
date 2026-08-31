@@ -5,6 +5,7 @@ import { getLastEntry, getNextUser, formatRelativeDate } from '../utils';
 import { cn } from '../lib/utils';
 import { Check, Camera, Video, X, Upload } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { UserAvatar } from './UserAvatar';
 
 interface TaskCardProps {
   key?: React.Key;
@@ -15,9 +16,10 @@ interface TaskCardProps {
   currentUser: UserName;
   onAdd: (taskId: TaskType, isOutOfOrder: boolean, reason?: string, fileUrl?: string, fileType?: 'image' | 'video') => Promise<void>;
   buttonText: string;
+  avatars: Record<string, string>;
 }
 
-export function TaskCard({ id, title, icon, entries, currentUser, onAdd, buttonText }: TaskCardProps) {
+export const TaskCard = React.memo(function TaskCard({ id, title, icon, entries, currentUser, onAdd, buttonText, avatars }: TaskCardProps) {
   const [isSuccess, setIsSuccess] = useState(false);
   const [showOutOfOrder, setShowOutOfOrder] = useState(false);
   const [customReason, setCustomReason] = useState('');
@@ -77,7 +79,7 @@ export function TaskCard({ id, title, icon, entries, currentUser, onAdd, buttonT
       )}
     >
       <div className="flex items-center gap-4 mb-6">
-        <img src={icon} alt={title} className="w-20 h-20 object-contain [image-rendering:pixelated] pointer-events-none select-none" />
+        <img loading="lazy" src={icon} alt={title} className="w-20 h-20 object-contain [image-rendering:pixelated] pointer-events-none select-none" />
         <h2 className="m3-headline-sm">{title}</h2>
       </div>
       
@@ -95,8 +97,10 @@ export function TaskCard({ id, title, icon, entries, currentUser, onAdd, buttonT
                 <Check size={32} strokeWidth={2} />
                 Готово
               </div>
-              <div className="m3-label-md mt-2 opacity-80 uppercase tracking-widest">
-                СЛЕДУЮЩИЙ: {nextUser}
+              <div className="m3-label-md mt-2 opacity-80 uppercase tracking-widest flex items-center gap-2">
+                СЛЕДУЮЩИЙ: 
+                <UserAvatar user={nextUser} avatarUrl={avatars[nextUser]} className="w-6 h-6 text-xs normal-case tracking-normal" />
+                {nextUser}
               </div>
             </motion.div>
           ) : showProofOptions ? (
@@ -124,7 +128,7 @@ export function TaskCard({ id, title, icon, entries, currentUser, onAdd, buttonT
                     {file.type.startsWith('video/') ? (
                       <Video size={32} className="text-white" />
                     ) : (
-                      <img src={URL.createObjectURL(file)} className="h-full object-contain" />
+                      <img loading="lazy" src={URL.createObjectURL(file)} className="h-full object-contain" />
                     )}
                   </div>
                   <div className="flex gap-2">
@@ -184,7 +188,13 @@ export function TaskCard({ id, title, icon, entries, currentUser, onAdd, buttonT
               <div className={cn(
                 "m3-headline-sm font-bold tracking-tight uppercase mb-3"
               )}>
-                {isMyTurn ? 'ТЫ СЛЕДУЮЩИЙ' : `СЛЕДУЮЩИЙ: ${nextUser}`}
+                {isMyTurn ? 'ТЫ СЛЕДУЮЩИЙ' : (
+                  <div className="flex items-center gap-2">
+                    СЛЕДУЮЩИЙ: 
+                    <UserAvatar user={nextUser} avatarUrl={avatars[nextUser]} className="w-8 h-8 text-sm normal-case tracking-normal" />
+                    {nextUser}
+                  </div>
+                )}
               </div>
               {lastEntry && (
                 <div className={cn(
@@ -214,3 +224,15 @@ export function TaskCard({ id, title, icon, entries, currentUser, onAdd, buttonT
     </div>
   );
 }
+, (prev, next) => {
+  if (prev.id !== next.id) return false;
+  if (prev.currentUser !== next.currentUser) return false;
+  if (prev.avatars !== next.avatars) return false;
+  const prevEntries = prev.entries.filter(e => e.taskType === prev.id);
+  const nextEntries = next.entries.filter(e => e.taskType === next.id);
+  if (prevEntries.length !== nextEntries.length) return false;
+  for (let i = 0; i < prevEntries.length; i++) {
+    if (prevEntries[i].id !== nextEntries[i].id) return false;
+  }
+  return true;
+});

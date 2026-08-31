@@ -1,11 +1,12 @@
+import { ChatMessage, UserName, Roulette } from "../types";
 import React, { useState, useEffect, useRef } from 'react';
-import { ChatMessage, UserName, Roulette } from '../types';
 import { api } from '../api';
 import { ArrowLeft, Send, Image as ImageIcon, Video, Dices, Play } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
-import { RouletteGame } from './RouletteGame';
+const RouletteGame = React.lazy(() => import('./RouletteGame').then(m => ({ default: m.RouletteGame })));
 import { socket } from '../socket';
+import { UserAvatar } from './UserAvatar';
 
 export interface SpinData {
   rouletteId: string;
@@ -16,10 +17,11 @@ export interface SpinData {
 
 interface ChatProps {
   currentUser: UserName;
+  avatars: Record<string, string>;
   onClose: () => void;
 }
 
-export function Chat({ currentUser, onClose }: ChatProps) {
+export function Chat({ currentUser, avatars, onClose }: ChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState('');
   const [isUploading, setIsUploading] = useState(false);
@@ -153,7 +155,8 @@ export function Chat({ currentUser, onClose }: ChatProps) {
               className={cn("flex flex-col max-w-[85%]", isMe ? "ml-auto items-end" : "mr-auto items-start")}
             >
               {showName && (
-                <div className="mb-1 m3-label-sm text-[var(--color-md-sys-color-on-surface-variant)] px-1">
+                <div className="mb-1 m3-label-sm text-[var(--color-md-sys-color-on-surface-variant)] px-1 flex items-center gap-1.5">
+                  <UserAvatar user={msg.user} avatarUrl={avatars[msg.user]} className="w-5 h-5 text-[10px]" />
                   {msg.user}
                 </div>
               )}
@@ -168,10 +171,10 @@ export function Chat({ currentUser, onClose }: ChatProps) {
                   <div className="mt-2 rounded-lg overflow-hidden border border-[var(--color-md-sys-color-outline-variant)]">
                     {msg.fileType === 'image' ? (
                       <a href={msg.fileUrl} target="_blank" rel="noreferrer">
-                        <img src={msg.fileUrl} alt="Вложение" className="max-h-64 object-contain" />
+                        <img loading="lazy" src={msg.fileUrl} alt="Вложение" className="max-h-64 object-contain" />
                       </a>
                     ) : (
-                      <video src={msg.fileUrl} controls className="max-h-64 object-contain" />
+                      <video preload="metadata" src={msg.fileUrl} controls className="max-h-64 object-contain" />
                     )}
                   </div>
                 )}

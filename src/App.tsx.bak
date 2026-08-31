@@ -3,9 +3,9 @@ import { api } from './api';
 import { Entry, UserName, TaskType } from './types';
 import { getSortedEntries, getMoscowDateString, getMoscowTimeString } from './utils';
 import { UserSelector } from './components/UserSelector';
-const HistoryList = React.lazy(() => import('./components/HistoryList').then(m => ({ default: m.HistoryList })));
+import { HistoryList } from './components/HistoryList';
 import { TaskCard } from './components/TaskCard';
-const Chat = React.lazy(() => import('./components/Chat').then(m => ({ default: m.Chat })));
+import { Chat } from './components/Chat';
 import { LogOut, History, ArrowLeft, MessageCircle, X } from 'lucide-react';
 import { cn } from './lib/utils';
 import { socket } from './socket';
@@ -26,7 +26,6 @@ export default function App() {
   const [avatars, setAvatars] = useState<Record<string, string>>({});
   const [showAvatarHint, setShowAvatarHint] = useState(() => !localStorage.getItem('avatarHintDismissed'));
   const avatarInputRef = React.useRef<HTMLInputElement>(null);
-  const handleAvatarClick = React.useCallback(() => avatarInputRef.current?.click(), []);
 
   useEffect(() => {
     const loadData = async () => {
@@ -47,14 +46,8 @@ export default function App() {
     };
     loadData();
 
-    const handleEntryAdded = (newEntry: Entry) => {
-      setEntries(prev => {
-        if (prev.some(e => e.id === newEntry.id)) return prev;
-        return getSortedEntries([...prev, newEntry]);
-      });
-    };
-    const handleEntryDeleted = (id: string) => {
-      setEntries(prev => prev.filter(e => e.id !== id));
+    const handleEntriesUpdated = (updatedEntries: Entry[]) => {
+      setEntries(getSortedEntries(updatedEntries));
     };
     const handleAvatarsUpdated = (updatedAvatars: Record<string, string>) => {
       setAvatars(updatedAvatars);
@@ -69,14 +62,12 @@ export default function App() {
       }
     };
 
-    socket.on('entry_added', handleEntryAdded);
-    socket.on('entry_deleted', handleEntryDeleted);
+    socket.on('entries_updated', handleEntriesUpdated);
     socket.on('avatars_updated', handleAvatarsUpdated);
     socket.on('connect', handleConnect);
 
     return () => {
-      socket.off('entry_added', handleEntryAdded);
-      socket.off('entry_deleted', handleEntryDeleted);
+      socket.off('entries_updated', handleEntriesUpdated);
       socket.off('avatars_updated', handleAvatarsUpdated);
       socket.off('connect', handleConnect);
       
@@ -123,25 +114,13 @@ export default function App() {
       fileType
     };
     
-    const optimisticEntry = { ...newEntry, id: Math.random().toString(36).substring(2, 9), createdAt: Date.now() };
-    setEntries(prev => getSortedEntries([...prev, optimisticEntry as Entry]));
-    try {
-      await api.addEntry(optimisticEntry);
-    } catch {
-      // Re-fetch on error to sync state
-      const loadedEntries = await api.getEntries();
-      setEntries(getSortedEntries(loadedEntries));
-    }
+    await api.addEntry(newEntry);
+    // Local state will be updated via socket 'entries_updated' event
   };
 
   const handleDeleteEntry = async (id: string) => {
-    setEntries(prev => prev.filter(e => e.id !== id));
-    try {
-      await api.deleteEntry(id);
-    } catch {
-      const loadedEntries = await api.getEntries();
-      setEntries(getSortedEntries(loadedEntries));
-    }
+    await api.deleteEntry(id);
+    // Local state will be updated via socket 'entries_updated' event
   };
 
   if (isLoading) {
@@ -162,7 +141,7 @@ export default function App() {
   };
 
   if (showChat) {
-    return <React.Suspense fallback={<div className="flex-1 flex items-center justify-center p-8 text-[var(--color-md-sys-color-on-surface-variant)]">Загрузка чата...</div>}><Chat currentUser={currentUser} avatars={avatars} onClose={() => setShowChat(false)} /></React.Suspense>;
+    return <Chat currentUser={currentUser} avatars={avatars} onClose={() => setShowChat(false)} />;
   }
 
   return (
@@ -177,7 +156,7 @@ export default function App() {
                   user={currentUser} 
                   avatarUrl={avatars[currentUser]} 
                   className="w-9 h-9 text-base"
-                  onClick={handleAvatarClick}
+                  onClick={() => avatarInputRef.current?.click()}
                 />
                 <span className="m3-title-md">{currentUser}</span>
               </div>

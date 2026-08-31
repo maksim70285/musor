@@ -1,8 +1,8 @@
 import { io, Socket } from 'socket.io-client';
 
-export const socket: Socket = io(window.location.origin, {
+export const socket: Socket = io({
   path: '/socket.io',
   reconnection: true,
   transports: ['polling', 'websocket'],
-  autoConnect: false // We connect manually when needed
+  autoConnect: true // Let Socket.IO handle connections and reconnections automatically
 });
