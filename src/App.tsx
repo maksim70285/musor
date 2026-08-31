@@ -27,6 +27,8 @@ export default function App() {
   const [showAvatarHint, setShowAvatarHint] = useState(() => !localStorage.getItem('avatarHintDismissed'));
   const avatarInputRef = React.useRef<HTMLInputElement>(null);
   const handleAvatarClick = React.useCallback(() => avatarInputRef.current?.click(), []);
+  const isInitialLoadRef = React.useRef(true);
+  const lastSyncRef = React.useRef(0);
 
   useEffect(() => {
     const loadData = async () => {
@@ -61,11 +63,23 @@ export default function App() {
     };
 
     const handleConnect = async () => {
-      // Re-fetch data on reconnect to avoid missed updates
+      if (isInitialLoadRef.current) {
+        isInitialLoadRef.current = false;
+        return;
+      }
+      
+      const now = Date.now();
+      if (now - lastSyncRef.current < 5000) return;
+      lastSyncRef.current = now;
+
       const user = await api.me();
       if (user) {
-        const loadedEntries = await api.getEntries();
+        const [loadedEntries, loadedAvatars] = await Promise.all([
+          api.getEntries(),
+          api.getAvatars()
+        ]);
         setEntries(getSortedEntries(loadedEntries));
+        setAvatars(loadedAvatars);
       }
     };
 
