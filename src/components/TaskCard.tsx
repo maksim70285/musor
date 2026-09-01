@@ -72,13 +72,16 @@ export const TaskCard = React.memo(function TaskCard({ id, title, icon, entries,
   return (
     <div 
       className={cn(
-        "p-6 sm:p-8 transition-all relative overflow-hidden",
+        "p-6 sm:p-8 transition-all relative overflow-hidden bg-cover bg-center",
         isMyTurn 
           ? "bg-[var(--color-md-sys-color-secondary-container)] text-[var(--color-md-sys-color-on-secondary-container)] rounded-[24px] shadow-sm" 
           : "m3-card-outlined rounded-[24px]"
       )}
+      style={{ backgroundImage: `url('https://i.ibb.co/ynsQCQ5j/IMG-5741.jpg')` }}
     >
-      <div className="flex items-center gap-4 mb-6">
+      <div className="absolute inset-0 bg-black/60 pointer-events-none" />
+      <div className="relative z-10 h-full">
+        <div className="flex items-center gap-4 mb-6">
         <img loading="lazy" src={icon} alt={title} className="w-20 h-20 object-contain [image-rendering:pixelated] pointer-events-none select-none" />
         <h2 className="m3-headline-sm">{title}</h2>
       </div>
@@ -221,6 +224,7 @@ export const TaskCard = React.memo(function TaskCard({ id, title, icon, entries,
           {isUploading ? '...' : buttonText}
         </button>
       )}
+      </div>
     </div>
   );
 }
